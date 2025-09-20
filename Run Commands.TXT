@@ -1,0 +1,53 @@
+
+RUN PIPELINE — Euro STOXX 50 & NASDAQ-100
+
+# PRÉREQUIS — fichiers d'entrée
+data\eurostoxx50_prices_values_only.csv
+data\nasdaq100_prices_values_only.csv
+
+# ÉTAPE 1 — CAUSAL DISCOVERY (VARLiNGAM) 
+
+
+# EURO STOXX 50
+python causal_discovery_varlingam.py data\eurostoxx50_prices_values_only.csv 1 eurostoxx50 VARLiNGAM
+python causal_discovery_varlingam.py data\eurostoxx50_prices_values_only.csv 2 eurostoxx50 VARLiNGAM
+
+# NASDAQ-100
+python causal_discovery_varlingam.py data\nasdaq100_prices_values_only.csv 1 nasdaq100 VARLiNGAM
+python causal_discovery_varlingam.py data\nasdaq100_prices_values_only.csv 2 nasdaq100 VARLiNGAM
+
+
+# ÉTAPE 2 — PREDICT
+
+# EURO STOXX 50 — LAG = 1
+python predict.py "data\eurostoxx50_prices_values_only.csv" "causal_graphs\graphs\eurostoxx50_graph_VARLiNGAM_lag_1.txt" 1 eurostoxx50 VARLiNGAM --train_frac 0.80
+
+# EURO STOXX 50 — LAG = 2
+python predict.py "data\eurostoxx50_prices_values_only.csv" "causal_graphs\graphs\eurostoxx50_graph_VARLiNGAM_lag_2.txt" 2 eurostoxx50 VARLiNGAM --train_frac 0.80
+
+# NASDAQ-100 — LAG = 1
+python predict.py "data\nasdaq100_prices_values_only.csv" "causal_graphs\graphs\nasdaq100_graph_VARLiNGAM_lag_1.txt" 1 nasdaq100 VARLiNGAM --train_frac 0.80
+
+# NASDAQ-100 — LAG = 2
+python predict.py "data\nasdaq100_prices_values_only.csv" "causal_graphs\graphs\nasdaq100_graph_VARLiNGAM_lag_2.txt" 2 nasdaq100 VARLiNGAM --train_frac 0.80
+
+
+# ÉTAPE 3 — BACKTEST
+
+# EURO STOXX 50 — LAG = 1  k = 3
+python backtest.py "data\eurostoxx50_prices_values_only.csv" "predictions\eurostoxx50_predictions_VARLiNGAM_lag_1.csv" 1 eurostoxx50 VARLiNGAM 3
+
+# EURO STOXX 50 — LAG = 2  k = 3
+python backtest.py "data\eurostoxx50_prices_values_only.csv" "predictions\eurostoxx50_predictions_VARLiNGAM_lag_2.csv" 2 eurostoxx50 VARLiNGAM 3
+
+# NASDAQ-100 — LAG = 1  k = 6
+python backtest.py "data\nasdaq100_prices_values_only.csv" "predictions\nasdaq100_predictions_VARLiNGAM_lag_1.csv" 1 nasdaq100 VARLiNGAM 6
+
+# NASDAQ-100 — LAG = 2  k = 6
+python backtest.py "data\nasdaq100_prices_values_only.csv" "predictions\nasdaq100_predictions_VARLiNGAM_lag_2.csv" 2 nasdaq100 VARLiNGAM 6
+
+
+
+# ÉTAPE 4 — FIGURES PROPRES AR vs k
+
+python make_clean_graph.py --root backtesting --outdir clean_graphs --markets eurostoxx50 nasdaq100 --lags 1 2
